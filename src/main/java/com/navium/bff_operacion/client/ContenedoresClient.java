@@ -10,6 +10,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.navium.bff_operacion.client.dto.ContenedorResponse;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @Component
 public class ContenedoresClient {
     
@@ -19,6 +21,7 @@ public class ContenedoresClient {
         this.restClient = restClientBuilder.baseUrl(msUrl).build();
     }
     
+    @CircuitBreaker(name = "contenedoresCb", fallbackMethod = "obtenerContenedoresPatioFallback")
     public List<ContenedorResponse> obtenerContenedoresPatio() {
         return restClient.get()
                 .uri("/api/contenedores/patio")
@@ -26,6 +29,7 @@ public class ContenedoresClient {
                 .body(new ParameterizedTypeReference<List<ContenedorResponse>>() {});
     }
     
+    // IMPORTANTE!!: REVISAR -- --- --- --- --- --- REVISAR!!!
     public ContenedorResponse actualizarAnden(Long idContenedor, String ubicacionAnden) {
         String uri = UriComponentsBuilder.fromPath("/api/contenedores/{id}/anden")
                 .queryParam("ubicacion", ubicacionAnden)
@@ -36,5 +40,11 @@ public class ContenedoresClient {
                 .uri(uri)
                 .retrieve()
                 .body(ContenedorResponse.class);
+    }
+    
+    // --- FALLBACKS ---
+    
+    private List<ContenedorResponse> obtenerContenedoresPatioFallback(Throwable t) {
+        return List.of(); 
     }
 }
