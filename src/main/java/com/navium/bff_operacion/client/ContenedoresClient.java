@@ -29,7 +29,7 @@ public class ContenedoresClient {
                 .body(new ParameterizedTypeReference<List<ContenedorResponse>>() {});
     }
     
-    // IMPORTANTE!!: REVISAR -- --- --- --- --- --- REVISAR!!!
+    /** IMPORTANTE!!: REVISAR -- --- --- --- --- --- REVISAR!!! */
     public ContenedorResponse actualizarAnden(Long idContenedor, String ubicacionAnden) {
         String uri = UriComponentsBuilder.fromPath("/api/contenedores/{id}/anden")
                 .queryParam("ubicacion", ubicacionAnden)
