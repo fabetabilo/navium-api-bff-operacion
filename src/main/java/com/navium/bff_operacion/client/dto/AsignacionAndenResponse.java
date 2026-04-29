@@ -2,7 +2,7 @@ package com.navium.bff_operacion.client.dto;
 
 import java.time.LocalDateTime;
 
-public record AsignacionResponse(
+public record AsignacionAndenResponse(
     Long id,
     Long andenId,
     String patenteTransporte,

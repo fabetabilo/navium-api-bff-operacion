@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.navium.bff_operacion.client.dto.AndenResponse;
-import com.navium.bff_operacion.client.dto.AsignacionResponse;
+import com.navium.bff_operacion.client.dto.AsignacionAndenResponse;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
@@ -31,7 +31,7 @@ public class AndenesClient {
     }
     
     @CircuitBreaker(name = "andenesCb", fallbackMethod = "asignarAndenFallback")
-    public AsignacionResponse asignarAnden(Long idAnden, String patente, Long contenedorId) {
+    public AsignacionAndenResponse asignarAnden(Long idAnden, String patente, Long contenedorId) {
         String uri = UriComponentsBuilder.fromPath("/api/v0/andenes/{id}/asignar")
                 .queryParam("patente", patente)
                 .queryParam("contenedorId", contenedorId)
@@ -41,7 +41,7 @@ public class AndenesClient {
         return restClient.post()
                 .uri(uri)
                 .retrieve()
-                .body(AsignacionResponse.class);
+                .body(AsignacionAndenResponse.class);
     }
     
     // --- FALLBACKS ---
@@ -50,7 +50,7 @@ public class AndenesClient {
         return List.of(); 
     }
 
-    private AsignacionResponse asignarAndenFallback(Long idAnden, String patente, Long contenedorId, Throwable t) {
+    private AsignacionAndenResponse asignarAndenFallback(Long idAnden, String patente, Long contenedorId, Throwable t) {
         throw new RuntimeException("El servicio de Andenes no está disponible para realizar la asignación en este momento.");
     }
 }
