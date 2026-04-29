@@ -1,27 +1,37 @@
 package com.navium.bff_operacion.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
+import com.navium.bff_operacion.client.AgendamientoClient;
 import com.navium.bff_operacion.client.AndenesClient;
 import com.navium.bff_operacion.client.ContenedoresClient;
+import com.navium.bff_operacion.client.dto.AgendamientoResponse;
 import com.navium.bff_operacion.client.dto.AndenResponse;
 import com.navium.bff_operacion.client.dto.ContenedorResponse;
+import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
 import com.navium.bff_operacion.web.dto.AndenMapResponse;
 import com.navium.bff_operacion.web.dto.AsignacionAndenRequest;
 
 @Service
 public class OperacionPatioService {
-
+    private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Santiago"); // zona horaria operativa del puerto local
+    
     private final AndenesClient andenesClient;
     private final ContenedoresClient contenedoresClient;
+    private final AgendamientoClient agendamientoClient;
 
-    public OperacionPatioService(AndenesClient andenesClient, ContenedoresClient contenedoresClient) {
+    public OperacionPatioService(AndenesClient andenesClient, ContenedoresClient contenedoresClient, AgendamientoClient agendamientoClient) {
         this.andenesClient = andenesClient;
         this.contenedoresClient = contenedoresClient;
+        this.agendamientoClient = agendamientoClient;
     }
 
     /**
@@ -72,5 +82,49 @@ public class OperacionPatioService {
         contenedoresClient.actualizarAnden(request.idContenedor(), request.codigoAnden());
         
         andenesClient.asignarAnden(request.idAnden(), request.patenteTransporte(), request.idContenedor());
+    }
+    
+    public List<AgendamientoMapResponse> obtenerAgendamientosHoy() {
+        LocalDate hoy = LocalDate.now(ZONA_HORARIA);
+        LocalDateTime inicio = hoy.atStartOfDay();
+        LocalDateTime fin = hoy.atTime(23, 59, 59);
+
+        return agendamientoClient.listarPorFechas(inicio, fin).stream()
+                .map(this::toOperarioResponse)
+                .toList();
+    }
+    
+    public List<AgendamientoMapResponse> buscarAgendamientosPorPatente(String patente) {
+        return agendamientoClient.buscarPorPatente(patente).stream()
+                .map(this::toOperarioResponse)
+                .toList();
+    }
+    
+    public AgendamientoMapResponse buscarAgendamientoPorId(Long id) {
+        AgendamientoResponse agendamiento = obtenerAgendamientoSeguro(id);
+        if (agendamiento == null) {
+            return null;
+        }
+        return toOperarioResponse(agendamiento);
+    }
+    
+    private AgendamientoMapResponse toOperarioResponse(AgendamientoResponse agendamiento) {
+        return new AgendamientoMapResponse(
+                agendamiento.id(),
+                agendamiento.patenteCamion(),
+                agendamiento.rutChofer(),
+                agendamiento.tipoOperacion(),
+                agendamiento.idContenedor(),
+                agendamiento.bloqueInicio(),
+                agendamiento.bloqueFin(),
+                agendamiento.estado());
+    }
+
+    private AgendamientoResponse obtenerAgendamientoSeguro(Long id) {
+        try {
+            return agendamientoClient.buscarPorId(id);
+        } catch (RestClientResponseException ex) {
+            return null;
+        }
     }
 }
