@@ -9,6 +9,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import org.springframework.stereotype.Component;
 
 /**
  * Interceptor para propagar el token JWT del BFF a los microservicios downstream.
@@ -18,6 +19,7 @@ import java.io.IOException;
  * - Lo agrega al header Authorization de las requests que se hacen a los microservicios downstream
  * - Permite que los microservicios validen el token del usuario original
  */
+@Component
 public class TokenPropagationInterceptor implements ClientHttpRequestInterceptor {
 
     @Override

@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class BffSecurityConfig {
 
     @Autowired
     private JwtAuthorizationFilter jwtAuthorizationFilter;
