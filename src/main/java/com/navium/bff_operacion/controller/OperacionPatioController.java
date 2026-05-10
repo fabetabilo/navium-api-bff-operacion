@@ -38,13 +38,16 @@ public class OperacionPatioController {
 	
 	
 	@PostMapping("/andenes/asignar")
-	public ResponseEntity<Void> asignarAndenManual(@RequestBody AsignacionAndenRequest request) {
+	public ResponseEntity<String> asignarAndenManual(@RequestBody AsignacionAndenRequest request) {
 		try {
 			this.operacionPatioService.asignarAndenManual(request);
 			return ResponseEntity.ok().build();
             
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			// log temporal!!! para diagnostico, prueba de circuit breaker
+        	System.out.println("ERROR en asignarAndenManual: " + e.getMessage());
+        	e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
 	
