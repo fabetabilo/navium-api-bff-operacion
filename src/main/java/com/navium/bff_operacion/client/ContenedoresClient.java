@@ -30,6 +30,7 @@ public class ContenedoresClient {
     }
     
     /** IMPORTANTE!!: REVISAR -- --- --- --- --- --- REVISAR!!! */
+    @CircuitBreaker(name = "contenedoresCb", fallbackMethod = "actualizarAndenFallback")
     public ContenedorResponse actualizarAnden(Long idContenedor, String ubicacionAnden) {
         String uri = UriComponentsBuilder.fromPath("/api/contenedores/{id}/anden")
                 .queryParam("ubicacion", ubicacionAnden)
@@ -46,5 +47,9 @@ public class ContenedoresClient {
     
     private List<ContenedorResponse> obtenerContenedoresPatioFallback(Throwable t) {
         return List.of(); 
+    }
+
+    private ContenedorResponse actualizarAndenFallback(Long idContenedor, String ubicacionAnden, Throwable t) {
+        throw new RuntimeException("El servicio de Contenedores no está disponible. No se pudo actualizar la ubicación del andén.");
     }
 }
