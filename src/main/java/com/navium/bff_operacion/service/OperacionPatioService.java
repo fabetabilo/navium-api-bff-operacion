@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
@@ -14,6 +12,7 @@ import com.navium.bff_operacion.client.AgendamientoClient;
 import com.navium.bff_operacion.client.AndenesClient;
 import com.navium.bff_operacion.client.ContenedoresClient;
 import com.navium.bff_operacion.client.dto.AgendamientoResponse;
+import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.client.dto.AndenResponse;
 import com.navium.bff_operacion.client.dto.ContenedorResponse;
 import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
@@ -35,37 +34,21 @@ public class OperacionPatioService {
     }
 
     /**
-     * Orquesta informacion completa de andenes. 
-     * Obtiene los andenes y los los contenedores que se encuentren registrados en el patio
+     * Orquesta informacion de andenes.
+     * Obtiene los andenes del microservicio de andenes.
      */
     public List<AndenMapResponse> obtenerMapaAndenes() {
         List<AndenResponse> andenes = andenesClient.obtenerAndenes();
-        List<ContenedorResponse> contenedoresPatio = contenedoresClient.obtenerContenedoresPatio();
-        
-        Map<String, ContenedorResponse> contenedoresIndexados = contenedoresPatio.stream()
-                .filter(con -> con.ubicacionAnden() != null && !con.ubicacionAnden().isEmpty())
-                .collect(Collectors.toMap(
-                        ContenedorResponse::ubicacionAnden,  // key: A1
-                        con -> con,                          // valor de contenedor
-                        (con1, con2) -> con1 // temporal!!: me hace ruido. entonces si hay un choque en base de datos, mantiene el primero
-                ));
                 
-        return andenes.stream().map(adn -> {
-            ContenedorResponse con = contenedoresIndexados.get(adn.codigo());
-            return new AndenMapResponse(
-                adn.id(),
-                adn.codigo(),
-                adn.zona(),
-                adn.numero(),
-                adn.tipo(),
-                adn.estado(),
-                adn.sector(),
-                // REGLA: si existe un contenedor asignado mapeamos sus properties, sino -> null
-                con != null ? con.id() : null,
-                con != null ? con.codigoSigla() : null,
-                con != null ? con.tipoCarga() : null
-            );
-        }).toList();
+        return andenes.stream().map(adn -> new AndenMapResponse(
+            adn.id(),
+            adn.codigo(),
+            adn.zona(),
+            adn.numero(),
+            adn.tipo(),
+            adn.estado(),
+            adn.sector()
+        )).toList();
     }
 
     /**
@@ -77,9 +60,6 @@ public class OperacionPatioService {
          * y hora de finalizacion estimada para asegurar que no pise un turno que va a llegar pronto, que si 
          * tenga agendamiento
         */
-        
-        // REVISAR!!!! -> .actualizarAnden
-        contenedoresClient.actualizarAnden(request.idContenedor(), request.codigoAnden());
         
         andenesClient.asignarAnden(request.idAnden(), request.patenteTransporte(), request.idContenedor());
     }
@@ -118,6 +98,22 @@ public class OperacionPatioService {
                 agendamiento.bloqueInicio(),
                 agendamiento.bloqueFin(),
                 agendamiento.estado());
+    }
+
+    /**
+     * Obtiene todos los andenes ocupados con su información de asignación activa.
+     * Consume el endpoint del microservicio de andenes que incluye la asignación.
+     */
+    public List<AndenInformacionResponse> obtenerAndenesConAsignacionInfo() {
+        return andenesClient.obtenerAndenesConAsignacion();
+    }
+
+    /**
+     * Obtiene un andén específico con su información de asignación activa.
+     * Consume el endpoint del microservicio de andenes que incluye la asignación.
+     */
+    public AndenInformacionResponse obtenerAndenConAsignacionInfo(Long idAnden) {
+        return andenesClient.obtenerAndenConAsignacion(idAnden);
     }
 
     private AgendamientoResponse obtenerAgendamientoSeguro(Long id) {

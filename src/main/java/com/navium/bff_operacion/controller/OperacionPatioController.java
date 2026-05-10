@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.service.OperacionPatioService;
 import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
 import com.navium.bff_operacion.web.dto.AndenMapResponse;
@@ -35,8 +36,30 @@ public class OperacionPatioController {
         }
         return ResponseEntity.ok(andenes);
 	}
-	
-	
+
+	/**
+	 * Obtiene todos los andenes ocupados con su información de asignación activa.
+	 * Consume el endpoint del microservicio de andenes que incluye la asignación.
+	 */
+	@GetMapping("/andenes/info")
+	public ResponseEntity<List<AndenInformacionResponse>> obtenerAndenesConAsignacionInfo() {
+		List<AndenInformacionResponse> andenes = this.operacionPatioService.obtenerAndenesConAsignacionInfo();
+		if (andenes.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(andenes);
+	}
+
+	/**
+	 * Obtiene un andén específico con su información de asignación activa.
+	 * Consume el endpoint del microservicio de andenes que incluye la asignación.
+	 */
+	@GetMapping("/andenes/{id}/info")
+	public ResponseEntity<AndenInformacionResponse> obtenerAndenConAsignacionInfo(@PathVariable Long id) {
+		AndenInformacionResponse anden = this.operacionPatioService.obtenerAndenConAsignacionInfo(id);
+		return ResponseEntity.ok(anden);
+	}
+
 	@PostMapping("/andenes/asignar")
 	public ResponseEntity<String> asignarAndenManual(@RequestBody AsignacionAndenRequest request) {
 		try {
