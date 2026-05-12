@@ -32,9 +32,6 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
-        System.out.println("AuthController: Login endpoint llamado");
-        System.out.println("AuthController: Credenciales recibidas = " + credenciales);
-        
         try {
             LoginRequest request = new LoginRequest(
                 credenciales.get("email"),

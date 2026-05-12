@@ -47,9 +47,6 @@ public class UsuariosClient {
      */
     @CircuitBreaker(name = "usuariosCb", fallbackMethod = "loginFallback")
     public LoginResponse login(LoginRequest request) {
-        System.out.println("UsuariosClient: Enviando login request a " + restClient.toString());
-        System.out.println("UsuariosClient: Email = " + request.email());
-        
         try {
             LoginResponse response = restClient.post()
                     .uri("/api/auth/login")
@@ -57,10 +54,10 @@ public class UsuariosClient {
                     .retrieve()
                     .body(LoginResponse.class);
             
-            System.out.println("UsuariosClient: Login exitoso, token recibido");
+            //System.out.println("UsuariosClient: Login exitoso, token recibido");
             return response;
         } catch (Exception e) {
-            System.out.println("UsuariosClient: Error en login - " + e.getClass().getName() + ": " + e.getMessage());
+            //System.out.println("UsuariosClient: Error en login - " + e.getClass().getName() + ": " + e.getMessage());
             e.printStackTrace();
             throw e;
         }

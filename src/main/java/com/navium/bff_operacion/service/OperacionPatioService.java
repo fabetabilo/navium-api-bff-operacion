@@ -1,35 +1,26 @@
 package com.navium.bff_operacion.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientResponseException;
 
 import com.navium.bff_operacion.client.AgendamientoClient;
 import com.navium.bff_operacion.client.AndenesClient;
-import com.navium.bff_operacion.client.ContenedoresClient;
 import com.navium.bff_operacion.client.dto.AgendamientoResponse;
 import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.client.dto.AndenResponse;
-import com.navium.bff_operacion.client.dto.ContenedorResponse;
 import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
 import com.navium.bff_operacion.web.dto.AndenMapResponse;
 import com.navium.bff_operacion.web.dto.AsignacionAndenRequest;
 
 @Service
 public class OperacionPatioService {
-    private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Santiago"); // zona horaria operativa del puerto local
     
     private final AndenesClient andenesClient;
-    private final ContenedoresClient contenedoresClient;
     private final AgendamientoClient agendamientoClient;
 
-    public OperacionPatioService(AndenesClient andenesClient, ContenedoresClient contenedoresClient, AgendamientoClient agendamientoClient) {
+    public OperacionPatioService(AndenesClient andenesClient, AgendamientoClient agendamientoClient) {
         this.andenesClient = andenesClient;
-        this.contenedoresClient = contenedoresClient;
         this.agendamientoClient = agendamientoClient;
     }
 
@@ -123,6 +114,7 @@ public class OperacionPatioService {
         return andenesClient.obtenerAndenConAsignacion(idAnden);
     }
 
+    /*
     private AgendamientoResponse obtenerAgendamientoSeguro(Long id) {
         try {
             return agendamientoClient.buscarPorId(id);
@@ -130,4 +122,5 @@ public class OperacionPatioService {
             return null;
         }
     }
+    */    
 }
