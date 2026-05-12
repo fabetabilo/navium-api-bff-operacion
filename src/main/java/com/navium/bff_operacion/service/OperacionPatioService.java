@@ -63,7 +63,7 @@ public class OperacionPatioService {
         
         andenesClient.asignarAnden(request.idAnden(), request.patenteTransporte(), request.idContenedor());
     }
-    
+    /*
     public List<AgendamientoMapResponse> obtenerAgendamientosHoy() {
         LocalDate hoy = LocalDate.now(ZONA_HORARIA);
         LocalDateTime inicio = hoy.atStartOfDay();
@@ -73,15 +73,22 @@ public class OperacionPatioService {
                 .map(this::toOperarioResponse)
                 .toList();
     }
+    */
     
     public List<AgendamientoMapResponse> buscarAgendamientosPorPatente(String patente) {
         return agendamientoClient.buscarPorPatente(patente).stream()
                 .map(this::toOperarioResponse)
                 .toList();
     }
-    
-    public AgendamientoMapResponse buscarAgendamientoPorId(Long id) {
-        AgendamientoResponse agendamiento = obtenerAgendamientoSeguro(id);
+
+    /**
+     * Consulta semántica de agendamiento para "en puerta".
+     * - Si viene id: retorna ese agendamiento.
+     * - Si viene patente: retorna el agendamiento vigente para el momento, o el próximo futuro más cercano.
+     * - El parámetro momento es opcional; si no se proporciona, usa el tiempo actual.
+     */
+    public AgendamientoMapResponse consultarAgendamiento(String patente, Long id, String momento) {
+        AgendamientoResponse agendamiento = agendamientoClient.consultar(patente, id, momento);
         if (agendamiento == null) {
             return null;
         }
