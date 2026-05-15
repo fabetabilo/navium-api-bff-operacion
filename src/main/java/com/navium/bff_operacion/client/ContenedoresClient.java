@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.navium.bff_operacion.client.dto.ContenedorResponse;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
+// en revision
 @Component
 public class ContenedoresClient {
     
@@ -29,27 +29,10 @@ public class ContenedoresClient {
                 .body(new ParameterizedTypeReference<List<ContenedorResponse>>() {});
     }
     
-    /** IMPORTANTE!!: REVISAR -- --- --- --- --- --- REVISAR!!! */
-    @CircuitBreaker(name = "contenedoresCb", fallbackMethod = "actualizarAndenFallback")
-    public ContenedorResponse actualizarAnden(Long idContenedor, String ubicacionAnden) {
-        String uri = UriComponentsBuilder.fromPath("/api/contenedores/{id}/anden")
-                .queryParam("ubicacion", ubicacionAnden)
-                .buildAndExpand(idContenedor)
-                .toUriString();
-                
-        return restClient.put()
-                .uri(uri)
-                .retrieve()
-                .body(ContenedorResponse.class);
-    }
-    
     // --- FALLBACKS ---
     
     private List<ContenedorResponse> obtenerContenedoresPatioFallback(Throwable t) {
         return List.of(); 
     }
 
-    private ContenedorResponse actualizarAndenFallback(Long idContenedor, String ubicacionAnden, Throwable t) {
-        throw new RuntimeException("El servicio de Contenedores no está disponible. No se pudo actualizar la ubicación del andén.");
-    }
 }

@@ -5,7 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.navium")
+@ComponentScan(
+	basePackages = {
+		"com.bff_operacion",
+		"com.navium"}
+	)
 public class BffOperacionApplication {
 
 	public static void main(String[] args) {

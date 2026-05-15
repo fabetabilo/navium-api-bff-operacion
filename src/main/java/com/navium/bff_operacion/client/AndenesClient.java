@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.client.dto.AndenResponse;
 import com.navium.bff_operacion.client.dto.AsignacionAndenResponse;
 
@@ -44,6 +45,22 @@ public class AndenesClient {
                 .body(AsignacionAndenResponse.class);
     }
     
+    @CircuitBreaker(name = "andenesCb", fallbackMethod = "obtenerAndenesConAsignacionFallback")
+    public List<AndenInformacionResponse> obtenerAndenesConAsignacion() {
+        return restClient.get()
+                .uri("/api/v0/andenes/asignacion")
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<AndenInformacionResponse>>() {});
+    }
+
+    @CircuitBreaker(name = "andenesCb", fallbackMethod = "obtenerAndenConAsignacionFallback")
+    public AndenInformacionResponse obtenerAndenConAsignacion(Long idAnden) {
+        return restClient.get()
+                .uri("/api/v0/andenes/{id}/asignacion", idAnden)
+                .retrieve()
+                .body(AndenInformacionResponse.class);
+    }
+
     // --- FALLBACKS ---
 
     private List<AndenResponse> obtenerAndenesFallback(Throwable t) {
@@ -52,5 +69,13 @@ public class AndenesClient {
 
     private AsignacionAndenResponse asignarAndenFallback(Long idAnden, String patente, Long contenedorId, Throwable t) {
         throw new RuntimeException("El servicio de Andenes no está disponible para realizar la asignación en este momento.");
+    }
+
+    private List<AndenInformacionResponse> obtenerAndenesConAsignacionFallback(Throwable t) {
+        return List.of(); 
+    }
+
+    private AndenInformacionResponse obtenerAndenConAsignacionFallback(Long idAnden, Throwable t) {
+        throw new RuntimeException("El servicio de Andenes no está disponible para obtener la información del andén.");
     }
 }

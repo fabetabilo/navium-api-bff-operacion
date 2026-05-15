@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.service.OperacionPatioService;
 import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
 import com.navium.bff_operacion.web.dto.AndenMapResponse;
@@ -35,8 +36,30 @@ public class OperacionPatioController {
         }
         return ResponseEntity.ok(andenes);
 	}
-	
-	
+
+	/**
+	 * Obtiene todos los andenes ocupados con su información de asignación activa.
+	 * Consume el endpoint del microservicio de andenes que incluye la asignación.
+	 */
+	@GetMapping("/andenes/info")
+	public ResponseEntity<List<AndenInformacionResponse>> obtenerAndenesConAsignacionInfo() {
+		List<AndenInformacionResponse> andenes = this.operacionPatioService.obtenerAndenesConAsignacionInfo();
+		if (andenes.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(andenes);
+	}
+
+	/**
+	 * Obtiene un andén específico con su información de asignación activa.
+	 * Consume el endpoint del microservicio de andenes que incluye la asignación.
+	 */
+	@GetMapping("/andenes/{id}/info")
+	public ResponseEntity<AndenInformacionResponse> obtenerAndenConAsignacionInfo(@PathVariable Long id) {
+		AndenInformacionResponse anden = this.operacionPatioService.obtenerAndenConAsignacionInfo(id);
+		return ResponseEntity.ok(anden);
+	}
+
 	@PostMapping("/andenes/asignar")
 	public ResponseEntity<String> asignarAndenManual(@RequestBody AsignacionAndenRequest request) {
 		try {
@@ -50,7 +73,7 @@ public class OperacionPatioController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
-	
+	/* FUTURO:
 	@GetMapping("/agendamientos/hoy")
 	public ResponseEntity<List<AgendamientoMapResponse>> obtenerAgendamientosHoy() {
 		List<AgendamientoMapResponse> agendamientos = this.operacionPatioService.obtenerAgendamientosHoy();
@@ -59,7 +82,11 @@ public class OperacionPatioController {
 		}
 		return ResponseEntity.ok(agendamientos);
 	}
+	*/
 	
+	/**
+	 * 
+	 */
 	@GetMapping("/agendamientos/patente/{patente}")
 	public ResponseEntity<List<AgendamientoMapResponse>> buscarAgendamientosPorPatente(@PathVariable String patente) {
 		List<AgendamientoMapResponse> agendamientos = this.operacionPatioService.buscarAgendamientosPorPatente(patente);
@@ -69,38 +96,20 @@ public class OperacionPatioController {
 		return ResponseEntity.ok(agendamientos);
 	}
 	
-	@GetMapping("/agendamientos/{id}")
-	public ResponseEntity<AgendamientoMapResponse> buscarAgendamientoPorId(@PathVariable Long id) {
-		AgendamientoMapResponse agendamiento = this.operacionPatioService.buscarAgendamientoPorId(id);
-		if (agendamiento == null) {
-			return ResponseEntity.notFound().build();
-		}
-		return ResponseEntity.ok(agendamiento);
-	}
-	
 	/**
 	 * Consulta desde puerto; permite consultar a traves de id de agendamiento y patente.
 	 * Se utiliza patente para permitir la consulta de multiples contenedores para el mismo transporte.
+	 * El parámetro momento es opcional y permite consultas históricas o futuras (formato ISO-8601).
 	 */
 	@GetMapping("/agendamientos/consulta")
-	public ResponseEntity<?> consultarAgendamientos(@RequestParam(required = false) String patente, @RequestParam(required = false) Long id) {
-		// si viene id, devuelve un solo agendamiento
-		if (id != null) {
-			AgendamientoMapResponse agendamiento = this.operacionPatioService.buscarAgendamientoPorId(id);
-			if (agendamiento == null) {
-				return ResponseEntity.notFound().build();
-			}
-			return ResponseEntity.ok(agendamiento);
+	public ResponseEntity<?> consultarAgendamientos(
+			@RequestParam(required = false) String patente,
+			@RequestParam(required = false) Long id,
+			@RequestParam(required = false) String momento) {
+		AgendamientoMapResponse agendamiento = this.operacionPatioService.consultarAgendamiento(patente, id, momento);
+		if (agendamiento == null) {
+			return ResponseEntity.noContent().build();
 		}
-		// si viene patente devuelve lista de agendamientos asociados; por ej. transporte de doble contenedor
-		if (patente != null && !patente.isBlank()) {
-			List<AgendamientoMapResponse> agendamientos = this.operacionPatioService.buscarAgendamientosPorPatente(patente);
-			if (agendamientos.isEmpty()) {
-				return ResponseEntity.noContent().build();
-			}
-			return ResponseEntity.ok(agendamientos);
-		}
-		
-		return ResponseEntity.badRequest().body("Debe indicar id o patente");
+		return ResponseEntity.ok(agendamiento);
 	}
 }

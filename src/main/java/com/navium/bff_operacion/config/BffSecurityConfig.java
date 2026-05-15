@@ -1,58 +1,40 @@
 package com.navium.bff_operacion.config;
 
-import com.navium.security_lib.security.JwtAuthorizationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 
 /**
- * Configuración de seguridad para el BFF de Operación de Patio.
+ * Configuración de seguridad personalizada para el BFF de Operación de Patio.
  * 
- * Esta configuración:
- * - Valida tokens JWT recibidos del frontend
- * - Restringe el acceso solo a usuarios con rol ROL_OPERADOR
- * - Configura sesiones como stateless
- * - Propaga tokens a microservicios downstream
+ * Esta configuración extiende el SecurityConfig de navium-security-lib mediante
+ * un Customizer que agrega reglas de autorización específicas para este BFF.
+ * 
+ * Reglas agregadas:
+ * - /api/v0/auth/login: pública (sin autenticación) para login de usuarios
+ * - /api/v0/operacion/**: requiere rol ROL_OPERADOR
  */
 @Configuration
-@EnableWebSecurity
 public class BffSecurityConfig {
 
-    @Autowired
-    private JwtAuthorizationFilter jwtAuthorizationFilter;
-
+    /**
+     * Customizer que agrega reglas de autorización específicas del BFF.
+     * 
+     * Este customizer es inyectado en el SecurityConfig de navium-security-lib
+     * y agrega las reglas específicas del BFF de operación de patio.
+     * 
+     * @return Customizer con las reglas de autorización del BFF
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // desactiva CSRF por uso de JWT
-            .csrf(csrf -> csrf.disable())
+    public Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeCustomizer() {
+        return auth -> {
+            // ====== RUTAS PÚBLICAS (SIN AUTENTICACIÓN) ======
+            auth.requestMatchers("/api/v0/auth/login").permitAll();
             
-            // No guardamos sesiones, cada petición debe traer su token
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> {
-                
-                // ====== RUTAS PÚBLICAS (SIN AUTENTICACIÓN) ======
-                // NOTA: Si en el futuro se necesita una ruta pública (ej: health-check, Swagger),
-                // agregarla aquí antes de las rutas protegidas. Ejemplo:
-                // auth.requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll();
-                
-                // ====== RUTAS PROTEGIDAS (REQUIEREN TOKEN JWT Y ROL: <ROL_OPERADOR>) ======
-                // Todas las rutas del BFF requieren autenticación con token JWT
-                // Solo usuarios con rol ROL_OPERADOR pueden acceder a los endpoints de operación de patio
-                auth.requestMatchers("/api/v0/operacion/**").hasAuthority("ROL_OPERADOR");
-                
-                // Por defecto, todas las demás rutas requieren autenticación
-                auth.anyRequest().authenticated();
-            })
-
-            // Registra el filtro JWT antes del filtro estándar de Spring
-            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+            // ====== RUTAS PROTEGIDAS (REQUIEREN TOKEN JWT Y ROL: <ROL_OPERADOR>) ======
+            auth.requestMatchers("/api/v0/operacion/**").hasAuthority("ROL_OPERADOR");
+        };
     }
 }

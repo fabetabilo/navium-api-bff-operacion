@@ -51,6 +51,20 @@ public class AgendamientoClient {
                 .body(AgendamientoResponse.class);
     }
 
+    @CircuitBreaker(name = "agendamientoCb", fallbackMethod = "consultarFallback")
+    public AgendamientoResponse consultar(String patente, Long id, String momento) {
+        String uri = UriComponentsBuilder.fromPath("/api/agendamientos/consulta")
+                .queryParam("patente", patente)
+                .queryParam("id", id)
+                .queryParam("momento", momento)
+                .toUriString();
+
+        return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(AgendamientoResponse.class);
+    }
+
     // --- FALLBACKS ---
 
     private List<AgendamientoResponse> listarPorFechasFallback(LocalDateTime inicio, LocalDateTime fin, Throwable t) {
@@ -62,6 +76,10 @@ public class AgendamientoClient {
     }
 
     private AgendamientoResponse buscarPorIdFallback(Long id, Throwable t) {
+        return null;
+    }
+
+    private AgendamientoResponse consultarFallback(String patente, Long id, String momento, Throwable t) {
         return null;
     }
 }
