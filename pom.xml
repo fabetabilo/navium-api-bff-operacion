@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.github.Matt-Val</groupId>
 			<artifactId>navium-security-lib</artifactId>
-			<version>1.1.1</version>
+			<version>v.1.1.2</version>
 		</dependency>
 		<!-- Circuit Breaker y AOP (3.5.3) esta lol -->
 		<dependency>
