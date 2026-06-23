@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.navium</groupId>
 	<artifactId>bff-operacion</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name/>
 	<description/>
 	<url/>
@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.github.Matt-Val</groupId>
 			<artifactId>navium-security-lib</artifactId>
-			<version>1.1.1</version>
+			<version>v.1.1.2</version>
 		</dependency>
 		<!-- Circuit Breaker y AOP (3.5.3) esta lol -->
 		<dependency>
