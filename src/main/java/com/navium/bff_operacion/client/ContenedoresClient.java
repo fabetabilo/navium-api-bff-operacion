@@ -28,11 +28,23 @@ public class ContenedoresClient {
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<ContenedorResponse>>() {});
     }
+
+    @CircuitBreaker(name = "contenedoresCb", fallbackMethod = "obtenerContenedorPorIdFallback")
+    public ContenedorResponse obtenerContenedorPorId(Long id) {
+        return restClient.get()
+                .uri("/api/contenedores/{id}", id)
+                .retrieve()
+                .body(ContenedorResponse.class);
+    }
     
     // --- FALLBACKS ---
     
     private List<ContenedorResponse> obtenerContenedoresPatioFallback(Throwable t) {
         return List.of(); 
+    }
+
+    private ContenedorResponse obtenerContenedorPorIdFallback(Long id, Throwable t) {
+        return null;
     }
 
 }

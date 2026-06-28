@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 
 import com.navium.bff_operacion.client.AgendamientoClient;
 import com.navium.bff_operacion.client.AndenesClient;
+import com.navium.bff_operacion.client.ContenedoresClient;
 import com.navium.bff_operacion.client.dto.AgendamientoResponse;
 import com.navium.bff_operacion.client.dto.AndenInformacionResponse;
 import com.navium.bff_operacion.client.dto.AndenResponse;
+import com.navium.bff_operacion.client.dto.ContenedorResponse;
 import com.navium.bff_operacion.web.dto.AgendamientoMapResponse;
 import com.navium.bff_operacion.web.dto.AndenMapResponse;
 import com.navium.bff_operacion.web.dto.AsignacionAndenRequest;
@@ -18,10 +20,12 @@ public class OperacionPatioService {
     
     private final AndenesClient andenesClient;
     private final AgendamientoClient agendamientoClient;
+    private final ContenedoresClient contenedoresClient;
 
-    public OperacionPatioService(AndenesClient andenesClient, AgendamientoClient agendamientoClient) {
+    public OperacionPatioService(AndenesClient andenesClient, AgendamientoClient agendamientoClient, ContenedoresClient contenedoresClient) {
         this.andenesClient = andenesClient;
         this.agendamientoClient = agendamientoClient;
+        this.contenedoresClient = contenedoresClient;
     }
 
     /**
@@ -61,14 +65,14 @@ public class OperacionPatioService {
         LocalDateTime fin = hoy.atTime(23, 59, 59);
 
         return agendamientoClient.listarPorFechas(inicio, fin).stream()
-                .map(this::toOperarioResponse)
+                .map(this::enriquecerConContenedor)
                 .toList();
     }
     */
     
     public List<AgendamientoMapResponse> buscarAgendamientosPorPatente(String patente) {
         return agendamientoClient.buscarPorPatente(patente).stream()
-                .map(this::toOperarioResponse)
+                .map(this::enriquecerConContenedor)
                 .toList();
     }
 
@@ -83,19 +87,35 @@ public class OperacionPatioService {
         if (agendamiento == null) {
             return null;
         }
-        return toOperarioResponse(agendamiento);
+        return enriquecerConContenedor(agendamiento);
     }
-    
-    private AgendamientoMapResponse toOperarioResponse(AgendamientoResponse agendamiento) {
+
+    /**
+     * Orquesta datos del agendamiento con información del contenedor desde el MS Contenedores.
+     * Si el contenedorId es null o el MS Contenedores no responde, se envían los campos del contenedor como null.
+     */
+    private AgendamientoMapResponse enriquecerConContenedor(AgendamientoResponse agendamiento) {
+        ContenedorResponse contenedor = null;
+        if (agendamiento.contenedorId() != null) {
+            contenedor = contenedoresClient.obtenerContenedorPorId(agendamiento.contenedorId());
+        }
+        return toOperarioResponse(agendamiento, contenedor);
+    }
+
+    private AgendamientoMapResponse toOperarioResponse(AgendamientoResponse ag, ContenedorResponse cont) {
         return new AgendamientoMapResponse(
-                agendamiento.id(),
-                agendamiento.patenteCamion(),
-                agendamiento.rutChofer(),
-                agendamiento.tipoOperacion(),
-                agendamiento.idContenedor(),
-                agendamiento.bloqueInicio(),
-                agendamiento.bloqueFin(),
-                agendamiento.estado());
+                ag.id(),
+                ag.patenteCamion(),
+                ag.rutChofer(),
+                ag.tipoOperacion(),
+                ag.contenedorId(),
+                cont != null ? cont.codigoSigla() : null,
+                cont != null ? cont.estadoTATC() : null,
+                cont != null ? cont.estadoGeneral() : null,
+                cont != null ? cont.rutEmpresaTransporte() : null,
+                ag.horaInicio(),
+                ag.bloqueFin(),
+                ag.estadoAgendamiento());
     }
 
     /**
@@ -124,3 +144,4 @@ public class OperacionPatioService {
     }
     */    
 }
+

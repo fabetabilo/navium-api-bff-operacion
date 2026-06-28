@@ -11,7 +11,11 @@ public record AgendamientoMapResponse(
     String patenteCamion,
     String rutChofer,
     String tipoOperacion,
-    String idContenedor,
+    Long idContenedor,
+    String codigoSigla,
+    String estadoTATC,
+    String estadoGeneral,
+    String rutEmpresaTransporte,
     LocalDateTime bloqueInicio,
     LocalDateTime bloqueFin,
     String estado

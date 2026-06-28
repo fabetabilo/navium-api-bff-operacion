@@ -4,12 +4,13 @@ import java.time.LocalDateTime;
 
 public record AgendamientoResponse(
     Long id,
-    Long usuarioId,
+    Long idUsuario,
     String patenteCamion,
     String rutChofer,
     String tipoOperacion,
-    String idContenedor,
-    LocalDateTime bloqueInicio,
+    Long contenedorId,
+    String correoUsuario,
+    LocalDateTime horaInicio,
     LocalDateTime bloqueFin,
-    String estado
+    String estadoAgendamiento
 ) {}
