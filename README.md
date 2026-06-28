@@ -4,6 +4,12 @@ En las operaciones del Puerto el operador de patio requiere una visión consolid
 
 Su objetivo es asegurar que la UI del operador consuma datos consolidados en un único punto de entrada, aplicando patrones de resiliencia y traducción de contratos.
 
+Microservicios:
+
+1. [Microservicio Andenes](https://github.com/fabetabilo/navium-ms-andenes)
+2. [Microservicio Agendamientos](https://github.com/AlvMaltrain/Navium-Microservicio-Agendamiento)
+3. [Microservicio Contenedores](https://github.com/Matt-Val/api-navium-contenedores)
+
 ### Responsabilidades del BFF
 
 1. **Orquestación y Consolidación de Agendamientos:** Consume el microservicio de Agendamientos por patente e integra en tiempo real la información detallada del Contenedor (sigla, estado TATC, estado general y empresa de transporte) consultando al microservicio de Contenedores.
