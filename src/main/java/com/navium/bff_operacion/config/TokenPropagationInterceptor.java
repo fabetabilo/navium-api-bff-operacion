@@ -34,11 +34,15 @@ public class TokenPropagationInterceptor implements ClientHttpRequestInterceptor
         
         if (attributes != null) {
             HttpServletRequest currentRequest = attributes.getRequest();
-            
-            // Extraer el header Authorization de la request actual
+
+            // Auth por cookie httpOnly: reenviar la cookie de sesión a los microservicios
+            String cookie = currentRequest.getHeader("Cookie");
+            if (cookie != null && !cookie.isEmpty()) {
+                request.getHeaders().add("Cookie", cookie);
+            }
+
+            // Compatibilidad: si llegara un Authorization, también propagarlo
             String authorizationHeader = currentRequest.getHeader("Authorization");
-            
-            // Si existe el header, propagarlo a la request del microservicio
             if (authorizationHeader != null && !authorizationHeader.isEmpty()) {
                 request.getHeaders().add("Authorization", authorizationHeader);
             }
