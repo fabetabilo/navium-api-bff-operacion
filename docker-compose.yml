@@ -1,0 +1,13 @@
+services:
+  api-andenes:
+    image: bff-operacion:latest
+    build: .
+    container_name: navium_bff_andenes
+    restart: always
+    ports:
+      - "8086:8086"
+    environment:
+      - API_ANDENES_URL=${API_ANDENES_URL}
+      - API_CONTENEDORES_URL=${API_CONTENEDORES_URL}
+      - API_AGENDAMIENTOS_URL=${API_AGENDAMIENTOS_URL}
+      - JWT_SECRET=${JWT_SECRET}
